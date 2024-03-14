@@ -73,6 +73,7 @@ export default function Checkbox({ label, size, hoverBackground, ...props }: Che
     })}>
       <input
         type="checkbox"
+        checked={props.checked}
         className={inputStyle({ size })}
         {...props}
       />
