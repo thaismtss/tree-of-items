@@ -6,7 +6,6 @@ import TreeNode from "./components/app/TreeNode";
 import { DataCheckBox } from "./types";
 import { getRootNode, findParent, convertToList } from "./_utils";
 
-
 export default function Home() {
   const [checkedNodes, setCheckedNodes] = useState<{ [key: string]: boolean }>(
     {}
