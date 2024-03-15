@@ -1,5 +1,5 @@
 import { VariantProps, cva, cx } from "class-variance-authority";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 const inputStyle = cva(
   [
@@ -42,15 +42,20 @@ interface CheckboxProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">,
     VariantProps<typeof inputStyle> {
   label: string;
+  id: string;
   hoverBackground?: boolean;
+  initialChecked?: boolean;
   indeterminate?: boolean;
+  onChecked: (checked: boolean) => void;
 }
 
 export default function Checkbox({
   label,
+  id,
   size,
   indeterminate,
   hoverBackground,
+  onChecked,
   ...props
 }: CheckboxProps) {
   const checkboxRef = React.useRef<HTMLInputElement>(null);
@@ -70,12 +75,17 @@ export default function Checkbox({
       <input
         type="checkbox"
         ref={checkboxRef}
-        checked={props?.checked ?? false}
         className={inputStyle({ size })}
+        checked={props.checked}
+        name={id}
+        id={id}
+        onChange={() => {
+          onChecked(!props.checked);
+        }}
         {...props}
       />
       <label
-        htmlFor={props.id}
+        htmlFor={id}
         className="ml-2 text-gray-700 cursor-pointer text-xl"
       >
         {label}

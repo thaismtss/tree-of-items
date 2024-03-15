@@ -48,7 +48,7 @@ export default function TreeNode({
           hoverBackground
           checked={checkedNodes[item.id] ?? false}
           indeterminate={indeterminateNodes[item.id] ?? false}
-          onChange={() => handleCheck(item)}
+          onChecked={() => handleCheck(item)}
         />
       </div>
 
