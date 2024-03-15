@@ -1,5 +1,5 @@
 import { VariantProps, cva, cx } from "class-variance-authority";
-import React from "react";
+import React, { useEffect } from "react";
 
 const inputStyle = cva(
   [
@@ -38,57 +38,42 @@ const inputStyle = cva(
   }
 );
 
-const svgStyle = cva([
-  "absolute",
-  "pointer-events-none",
-  "hidden",
-  "peer-checked:block",
-  "stroke-white",
-  "mt-1",
-  "pl-1",
-  "outline-none",
-], {
-  variants: {
-    size: {
-      small: ["w-4", "h-4"],
-      medium: ["w-5", "h-5"],
-      large: ["w-6", "h-6"],
-    },
-  },
-  defaultVariants: {
-    size: "medium",
-  },
-  
-})
-
-interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>, VariantProps<typeof inputStyle> {
+interface CheckboxProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">,
+    VariantProps<typeof inputStyle> {
   label: string;
   hoverBackground?: boolean;
+  indeterminate?: boolean;
 }
 
-export default function Checkbox({ label, size, hoverBackground, ...props }: CheckboxProps) {
+export default function Checkbox({
+  label,
+  size,
+  indeterminate,
+  hoverBackground,
+  ...props
+}: CheckboxProps) {
+  const checkboxRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = indeterminate ?? false;
+    }
+  }, [indeterminate]);
+
   return (
-    <div className={cx("flex items-center w-full", {
-      "hover:bg-gray-200": hoverBackground,
-    })}>
+    <div
+      className={cx("flex items-center w-full", {
+        "hover:bg-gray-200": hoverBackground,
+      })}
+    >
       <input
         type="checkbox"
-        checked={props.checked}
+        ref={checkboxRef}
+        checked={props?.checked ?? false}
         className={inputStyle({ size })}
         {...props}
       />
-      <svg
-        className={svgStyle({ size })}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <polyline points="20 6 9 17 4 12"></polyline>
-      </svg>
       <label
         htmlFor={props.id}
         className="ml-2 text-gray-700 cursor-pointer text-xl"

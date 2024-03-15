@@ -6,11 +6,19 @@ import { useEffect, useState } from "react";
 interface TreeNodeProps {
   item: DataCheckBox;
   checkedNodes: { [key: string]: boolean };
+  indeterminateNodes: { [key: string]: boolean };
   child?: boolean;
   onCheck: (item: DataCheckBox, checked: boolean) => void;
 }
 
-export default function TreeNode({ item, onCheck, checkedNodes }: TreeNodeProps) {
+export default function TreeNode({ item, onCheck, checkedNodes, indeterminateNodes }: TreeNodeProps) {
+  const [isChecked, setIsChecked] = useState<boolean>(false);
+
+  function handleCheck(item: DataCheckBox) {
+    setIsChecked((prev) => !prev);
+    onCheck(item, !isChecked);
+  }
+  
   return (
     <div
       key={item.id}
@@ -22,12 +30,13 @@ export default function TreeNode({ item, onCheck, checkedNodes }: TreeNodeProps)
         id={item.id}
         name={item.name}
         hoverBackground
-        checked={!!checkedNodes[item.id]}
-        onChange={(e) => onCheck(item, e.target.checked)}
+        checked={checkedNodes[item.id] ?? false}
+        indeterminate={indeterminateNodes[item.id] ?? false}
+        onChange={() => handleCheck(item)}
 
       />
       {item.children.map((child) => (
-        <TreeNode item={child} key={child.id} onCheck={onCheck} checkedNodes={checkedNodes} />
+        <TreeNode item={child} key={child.id} onCheck={onCheck} checkedNodes={checkedNodes} indeterminateNodes={indeterminateNodes} />
       ))}
     </div>
   );

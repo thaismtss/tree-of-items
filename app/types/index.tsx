@@ -3,7 +3,6 @@ interface ChildrenCheckBox {
   name: string;
   level: number;
   children: ChildrenCheckBox[];
-  checked: boolean;
 }
 
 export interface DataCheckBox {
@@ -11,5 +10,14 @@ export interface DataCheckBox {
   name: string;
   level: number;
   children: ChildrenCheckBox[];
-  checked: boolean;
+}
+
+
+export interface Data {
+  [key: string]: {
+    id: string;
+    name: string;
+    level: number;
+    children: Data;
+  };
 }
