@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import data from "./../data.json";
 import TreeContainer from "./components/app/TreeContainer";
 import TreeNode from "./components/app/TreeNode";
@@ -13,84 +13,88 @@ export default function Home() {
   const [indeterminateNodes, setIndeterminateNodes] = useState<{
     [key: string]: boolean;
   }>({});
-  const parsedData = convertToList(data);
+  const parsedData = useMemo(() => convertToList(data), []);
 
-  function updatedChildrens(
-    node: DataCheckBox,
-    checked: boolean,
-    updatedSelection = { ...checkedNodes },
-    indeterminates = { ...indeterminateNodes }
-  ) {
-    if (!checked) {
-      delete updatedSelection[node.id];
-    } else {
-      updatedSelection[node.id] = checked;
-      delete indeterminates[node.id];
-    }
+  const updatedChildrens = useCallback(
+    (
+      node: DataCheckBox,
+      checked: boolean,
+      checkeds: { [key: string]: boolean },
+      indeterminates: { [key: string]: boolean }
+    ) => {
+      if (!checked) {
+        delete checkeds[node.id];
+      } else {
+        checkeds[node.id] = checked;
+        delete indeterminates[node.id];
+      }
 
-    node.children.forEach((child) => {
-      updatedChildrens(
-        child,
-        updatedSelection[node.id],
-        updatedSelection,
-        indeterminates
-      );
-    });
+      node.children.forEach((child) => {
+        updatedChildrens(
+          child,
+          checkeds[node.id],
+          checkeds,
+          indeterminates
+        );
+      });
+    },
+    []
+  );
 
-    return { checkeds: updatedSelection };
-  }
+  const updatedCheckbox = useCallback(
+    (
+      rootNode: DataCheckBox,
+      node: DataCheckBox,
+      checkeds: { [key: string]: boolean },
+      indeterminates: { [key: string]: boolean }
+    ) => {
+      const parent = findParent(rootNode, node);
 
-  function updatedChecks(
-    rootNode: DataCheckBox,
-    node: DataCheckBox,
-    checkeds = { ...checkedNodes },
-    indeterminates = { ...indeterminateNodes }
-  ) {
-    const parent = findParent(rootNode, node);
+      if (node.level === 0) {
+        const allChildrenChecked = node.children.every(
+          (child) => checkeds[child.id]
+        );
+        if (allChildrenChecked) {
+          updatedChildrens(node, true, checkeds, indeterminates);
+        }
+      }
 
-    if (node.level === 0) {
-      const allChildrenChecked = node.children.every(
+      if (!parent) {
+        return { checkeds, indeterminates };
+      }
+
+      const allChildrenChecked = parent.children.every(
         (child) => checkeds[child.id]
       );
+      const someChildrenChecked = parent.children.some(
+        (child) => checkeds[child.id]
+      );
+      const someChildrenIndeterminate = parent.children.some(
+        (child) => indeterminates[child.id]
+      );
+
       if (allChildrenChecked) {
-        updatedChildrens(node, true, checkeds, indeterminates);
+        delete indeterminates[parent.id];
+        checkeds[parent.id] = true;
+      } else {
+        delete checkeds[parent.id];
       }
-    }
 
-    if (!parent) {
-      return { checkeds, indeterminates };
-    }
+      if (
+        (someChildrenChecked && !allChildrenChecked) ||
+        someChildrenIndeterminate
+      ) {
+        indeterminates[parent.id] = true;
+      } else {
+        delete indeterminates[parent.id];
+      }
 
-    const allChildrenChecked = parent.children.every(
-      (child) => checkeds[child.id]
-    );
-    const someChildrenChecked = parent.children.some(
-      (child) => checkeds[child.id]
-    );
-    const someChildrenIndeterminate = parent.children.some(
-      (child) => indeterminates[child.id]
-    );
+      return updatedCheckbox(rootNode, parent, checkeds, indeterminates);
+    },
+    [updatedChildrens]
+  );
 
-    if (allChildrenChecked) {
-      delete indeterminates[parent.id];
-      checkeds[parent.id] = true;
-    } else {
-      delete checkeds[parent.id];
-    }
-
-    if (
-      (someChildrenChecked && !allChildrenChecked) ||
-      someChildrenIndeterminate
-    ) {
-      indeterminates[parent.id] = true;
-    } else {
-      delete indeterminates[parent.id];
-    }
-
-    return updatedChecks(rootNode, parent, checkeds, indeterminates);
-  }
-
-  function handleCheck(item: DataCheckBox) {
+  const handleCheck = useCallback((item: DataCheckBox) => {
     const isChecked =
       checkedNodes[item.id] === undefined ? true : !checkedNodes[item.id];
     const checkeds = { ...checkedNodes };
@@ -101,11 +105,11 @@ export default function Home() {
 
     updatedChildrens(item, isChecked, checkeds, indeterminates);
     const { checkeds: updatedCheckeds, indeterminates: updatedIndeterminates } =
-      updatedChecks(rootNode, item, checkeds, indeterminates);
+      updatedCheckbox(rootNode, item, checkeds, indeterminates);
 
     setCheckedNodes(updatedCheckeds);
     setIndeterminateNodes(updatedIndeterminates);
-  }
+  }, [checkedNodes, indeterminateNodes, updatedChildrens, updatedCheckbox, parsedData])
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
