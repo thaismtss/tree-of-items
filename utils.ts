@@ -1,4 +1,4 @@
-import { Data, DataCheckBox } from "./types";
+import { Data, DataCheckBox } from "./app/types";
 
 export function convertToList(data: Data): DataCheckBox[] {
     const dataToArr = Object.values(data);

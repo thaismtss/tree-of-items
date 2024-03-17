@@ -2,10 +2,10 @@ import { describe, it, expect, vi, Mock, beforeAll } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import Home from "./page";
-import { convertToList } from "./_utils";
+import { convertToList } from "../utils";
 
 vi.mock("./_utils", async (importOriginal) => {
-  const actual = (await importOriginal()) as typeof import("./_utils");
+  const actual = (await importOriginal()) as typeof import("../utils");
   return {
     ...actual,
     convertToList: vi.fn(),
