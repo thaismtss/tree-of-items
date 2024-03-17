@@ -1,19 +1,46 @@
 import { DataCheckBox } from "@/app/types";
 import TreeNode from "../TreeNode";
 import { findParent, getRootNode } from "@/utils";
-import { useCallback, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
+import Checkbox from "../ui/Checkbox";
 
 export interface TreeProps {
   data: DataCheckBox[];
+  showControl?: boolean;
 }
 
-export default function Tree({ data }: TreeProps) {
+export default function Tree({ data, showControl }: TreeProps) {
+  const [selectAll, setSelectAll] = useState(false);
   const [checkedNodes, setCheckedNodes] = useState<{ [key: string]: boolean }>(
     {}
   );
   const [indeterminateNodes, setIndeterminateNodes] = useState<{
     [key: string]: boolean;
   }>({});
+
+  useEffect(() => {
+    selectAllNodes();
+  }, [selectAll]);
+
+const selectAllNodes = useCallback(() => {
+  const updatedNodes = (items: DataCheckBox[]) => {
+    let selections = {} as  {[key: string]: boolean};
+    items.forEach((item) => {
+      selections[item.id] = selectAll;
+      if (item.children) {
+        const childSelections = updatedNodes(item.children);
+        selections = { ...selections, ...childSelections };
+      }
+    });
+    return selections;
+  };
+
+  const selections = updatedNodes(data);
+  setCheckedNodes((prev) => {
+    return { ...prev, ...selections };
+  });
+}, [data, selectAll]);
+
 
   const updatedChildrens = useCallback(
     (
@@ -90,7 +117,6 @@ export default function Tree({ data }: TreeProps) {
       }
 
       return updatedParents(rootNode, parent, checkeds, indeterminates);
-
     },
     []
   );
@@ -105,14 +131,15 @@ export default function Tree({ data }: TreeProps) {
 
       if (!rootNode) return;
 
-      const { newCheckeds: newCheckedsChildrens, newIndeterminates: newIndeterminatesChildrens } = updatedChildrens(
-        item,
-        isChecked,
-        checkeds,
-        indeterminates
-      );
+      const {
+        newCheckeds: newCheckedsChildrens,
+        newIndeterminates: newIndeterminatesChildrens,
+      } = updatedChildrens(item, isChecked, checkeds, indeterminates);
 
-      const { newCheckeds: newCheckedsParents, newIndeterminates: newIndeterminatesParents } = updatedParents(
+      const {
+        newCheckeds: newCheckedsParents,
+        newIndeterminates: newIndeterminatesParents,
+      } = updatedParents(
         rootNode,
         item,
         newCheckedsChildrens,
@@ -120,7 +147,10 @@ export default function Tree({ data }: TreeProps) {
       );
 
       checkeds = { ...newCheckedsChildrens, ...newCheckedsParents };
-      indeterminates = { ...newIndeterminatesChildrens, ...newIndeterminatesParents };
+      indeterminates = {
+        ...newIndeterminatesChildrens,
+        ...newIndeterminatesParents,
+      };
 
       setCheckedNodes(checkeds);
       setIndeterminateNodes(indeterminates);
@@ -128,8 +158,21 @@ export default function Tree({ data }: TreeProps) {
     [checkedNodes, indeterminateNodes, updatedChildrens, updatedParents, data]
   );
 
+
   return (
     <div className="flex flex-col gap-1">
+      {showControl && (
+        <div className="flex bg-gray-200 p-4 mb-4 rounded-md">
+          <div className="ml-3">
+            <Checkbox
+              id="selectAll"
+              label="Selecionar Todos"
+              checked={selectAll}
+              onChecked={setSelectAll}
+            />
+          </div>
+        </div>
+      )}
       {data.map((item) => (
         <TreeNode
           key={item.id}

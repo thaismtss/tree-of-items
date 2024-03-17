@@ -14,7 +14,7 @@ export default function Home() {
       </h1>
       <div className="flex justify-center mx-auto w-3/5 py-10 border border-gray-400 rounded-lg">
         <div className="flex flex-col gap-2 w-screen mx-4">
-          <Tree data={parsedData}/>
+          <Tree data={parsedData} showControl/>
         </div>
       </div>
     </div>
