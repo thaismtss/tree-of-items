@@ -30,11 +30,11 @@ export default function TreeNode({
   }
 
   return (
-    <div
+    <ul
       style={{ marginLeft: `${item.level * 20}px` }}
       className="flex flex-col gap-1"
     >
-      <div className="flex items-center gap-2">
+      <li className="flex items-center gap-2">
         <div className="cursor-pointer w-6" onClick={handleExpanded}>
           {item.children.length > 0 && (
             <>{expanded ? <ChevronDown /> : <ChevronRight />}</>
@@ -50,10 +50,10 @@ export default function TreeNode({
           indeterminate={indeterminateNodes[item.id] ?? false}
           onChecked={() => handleCheck(item)}
         />
-      </div>
+      </li>
 
       {expanded &&
-        item.children.map((child) => (
+        item.children && item.children.map((child) => (
           <TreeNode
             item={child}
             key={child.id}
@@ -62,6 +62,6 @@ export default function TreeNode({
             indeterminateNodes={indeterminateNodes}
           />
         ))}
-    </div>
+    </ul>
   );
 }

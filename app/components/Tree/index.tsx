@@ -18,29 +18,25 @@ export default function Tree({ data, showControl }: TreeProps) {
     [key: string]: boolean;
   }>({});
 
-  useEffect(() => {
-    selectAllNodes();
-  }, [selectAll]);
 
-const selectAllNodes = useCallback(() => {
-  const updatedNodes = (items: DataCheckBox[]) => {
-    let selections = {} as  {[key: string]: boolean};
-    items.forEach((item) => {
-      selections[item.id] = selectAll;
-      if (item.children) {
-        const childSelections = updatedNodes(item.children);
-        selections = { ...selections, ...childSelections };
-      }
+  const selectAllNodes = useCallback((value: boolean) => {
+    const updatedNodes = (items: DataCheckBox[]) => {
+      let selections = {} as { [key: string]: boolean };
+      items.forEach((item) => {
+        selections[item.id] = value;
+        if (item.children) {
+          const childSelections = updatedNodes(item.children);
+          selections = { ...selections, ...childSelections };
+        }
+      });
+      return selections;
+    };
+
+    const selections = updatedNodes(data);
+    setCheckedNodes((prev) => {
+      return { ...prev, ...selections };
     });
-    return selections;
-  };
-
-  const selections = updatedNodes(data);
-  setCheckedNodes((prev) => {
-    return { ...prev, ...selections };
-  });
-}, [data, selectAll]);
-
+  }, [data]);
 
   const updatedChildrens = useCallback(
     (
@@ -152,12 +148,17 @@ const selectAllNodes = useCallback(() => {
         ...newIndeterminatesParents,
       };
 
+      setSelectAll(false);
       setCheckedNodes(checkeds);
       setIndeterminateNodes(indeterminates);
     },
     [checkedNodes, indeterminateNodes, updatedChildrens, updatedParents, data]
   );
 
+  const handleSelectAll = useCallback(() => {
+    setSelectAll((prev) => !prev);
+    selectAllNodes(!selectAll);
+  }, [selectAll, selectAllNodes]);
 
   return (
     <div className="flex flex-col gap-1">
@@ -168,7 +169,7 @@ const selectAllNodes = useCallback(() => {
               id="selectAll"
               label="Selecionar Todos"
               checked={selectAll}
-              onChecked={setSelectAll}
+              onChecked={handleSelectAll}
             />
           </div>
         </div>
