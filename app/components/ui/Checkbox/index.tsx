@@ -86,7 +86,7 @@ export default function Checkbox({
       />
       <label
         htmlFor={id}
-        className="ml-2 text-gray-700 cursor-pointer text-xl"
+        className="ml-2 text-gray-700 cursor-pointer md:text-xl"
       >
         {label}
       </label>

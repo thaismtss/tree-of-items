@@ -31,7 +31,7 @@ export default function TreeNode({
 
   return (
     <div
-      style={{ marginLeft: `${item.level * 24}px` }}
+      style={{ marginLeft: `${item.level * 20}px` }}
       className="flex flex-col gap-1"
     >
       <div className="flex items-center gap-2">

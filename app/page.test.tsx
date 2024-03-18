@@ -4,7 +4,7 @@ import { userEvent } from "@testing-library/user-event";
 import Home from "./page";
 import { convertToList } from "../utils";
 
-vi.mock("./_utils", async (importOriginal) => {
+vi.mock("../utils", async (importOriginal) => {
   const actual = (await importOriginal()) as typeof import("../utils");
   return {
     ...actual,
