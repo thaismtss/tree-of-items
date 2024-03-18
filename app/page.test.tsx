@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, Mock, beforeAll } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import Home from "./page";
 import { convertToList } from "../utils";
@@ -36,6 +36,18 @@ describe("Home Page", () => {
           { id: 4, level: 1, name: "Item D", children: [] },
         ],
       },
+      {
+        id: 5,
+        level: 0,
+        name: "Item E",
+        children: []
+      },
+      {
+        id: 6,
+        level: 0,
+        name: "Item F",
+        children: []
+      }
     ];
 
     (convertToList as Mock).mockReturnValue(mockData);
@@ -104,5 +116,21 @@ describe("Home Page", () => {
     expect(screen.getByRole("checkbox", { name: /Item B/i })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: /Item C/i })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: /Item D/i })).not.toBeChecked();
+  });
+
+  it("checked all nodes should check all parents", async () => {
+    render(<Home />);
+    await act(async () => {
+      userEvent.click(screen.getByRole("checkbox", { name: /selecionar todos/i }));
+    })
+
+    await waitFor(() => {
+      expect(screen.getByRole("checkbox", { name: /Item A/i })).toBeChecked();
+      expect(screen.getByRole("checkbox", { name: /Item B/i })).toBeChecked();
+      expect(screen.getByRole("checkbox", { name: /Item C/i })).toBeChecked();
+      expect(screen.getByRole("checkbox", { name: /Item D/i })).toBeChecked();
+      expect(screen.getByRole("checkbox", { name: /Item E/i })).toBeChecked();
+      expect(screen.getByRole("checkbox", { name: /Item F/i })).toBeChecked();
+    });
   });
 });
